@@ -1,0 +1,222 @@
+
+
+
+
+Assignment Report 1: Implementation of a Search Agent
+CSCI 485: Advanced Topics in General Computer Science: Foundations of AI
+Erik Schumann
+667072862
+____________________________________________________________________________________________________________________________________________________________________________
+1.How to compile and execute your program? If your source code files need to be placed into subfolders in order to use the makefile, explain how the files should be organized.
+
+In the beginning the following files should be in the folder:
+
+INode.java			ISearchAgent.java		README				SlidingPuzzle.java		SlidingPuzzleProblem.java
+IProblem.java			NodeComporator.java		SearchAgent.java		SlidingPuzzleNode.java
+
+Get into the folder assignment1 using cmd and run following command to compile the program:
+
+	>javac *.java
+
+Now the following files should be there (.class files are the compiled ones):
+
+INode.class			IProblem.java			NodeComporator.class		SearchAgent.class		SlidingPuzzle.java		SlidingPuzzleProblem.class
+INode.java			ISearchAgent.class		NodeComporator.java		SearchAgent.java		SlidingPuzzleNode.class		SlidingPuzzleProblem.java
+IProblem.class			ISearchAgent.java		README				SlidingPuzzle.class		SlidingPuzzleNode.java
+
+Run following command to run the program:
+
+	>java Slidingpuzzle
+	
+To clean up the program, run the following command
+
+	>rm *.class
+
+
+____________________________________________________________________________________________________________________________________________________________________________	
+2.How should a user enter the initial state of the sliding puzzle game?
+
+When a user starts the program, the program requests the user to read in the initial state element by element. After each step the current state will be visualized.
+To input the empty space, the user needs to enter a 0.
+
+|--||--||--||--|
+| 1|| 2|| 3|| 4|
+|--||--||--||--|
+| 9||10||11||12|
+|--||--||--||--|
+|**||  ||  ||  |
+|--||--||--||--|
+|  ||  ||  ||  |
+|--||--||--||--|
+>>>5
+|--||--||--||--|
+| 1|| 2|| 3|| 4|
+|--||--||--||--|
+| 9||10||11||12|
+|--||--||--||--|
+| 5||**||  ||  |
+|--||--||--||--|
+|  ||  ||  ||  |
+|--||--||--||--|
+>>>8
+
+The stars ** represents the element which should be filled.
+
+
+____________________________________________________________________________________________________________________________________________________________________________
+3.What output can be expected from your program if your AI agent finds a solution of the game or fails to find a solution (hopefully only because the puzzle doesn't have a solution);
+
+When the AI agent finds a solution, you can expect it to print the complete path from beginning to end state (incl. commands what to do) and metrics:
+
+....
+|--||--||--||--|
+| 2|| 7|| 9|| 8|
+|--||--||--||--|
+|14||13|| 1|| 5|
+|--||--||--||--|
+| 3|| 4||10||  |
+|--||--||--||--|
+|12|| 6||11||15|
+|--||--||--||--|
+
+^^ Move 15 ^^
+Pathcost so far: 1
+Heuristics so far: 16
+Evaluation so far: 39
+
+|--||--||--||--|
+| 2|| 7|| 9|| 8|
+|--||--||--||--|
+|14||13|| 1|| 5|
+|--||--||--||--|
+| 3|| 4||10||15|
+|--||--||--||--|
+|12|| 6||11||  |
+|--||--||--||--|
+
+^^ Start ^^
+Pathcost so far: 0
+Heuristics so far: 15
+Evaluation so far: 38
+Steps to Goal: 51
+Steps tested to reach goal 1289285
+Queue size: 2383919
+Prevented duplicates: 1389491
+Evaluated Steps: 3773410
+
+
+If the AI agent doesn't find a solution, there are 2 cases:
+	>No Solution found! (step limit reached)
+	>No Solution found! (no more steps available)
+
+|--||--||--||--|
+| 1|| 2|| 3|| 4|
+|--||--||--||--|
+| 9||10||11||12|
+|--||--||--||--|
+| 5||13|| 8||15|
+|--||--||--||--|
+|14||  || 6|| 7|
+|--||--||--||--|
+No Solution found! (step limit reached)
+Steps tested: 20
+Queue size: 45
+Prevented duplicates: 21
+Evaluated Successor: 66
+(Example for the first case: step limit reached)
+
+In both cases just the last inspected state is visualized together with some metrics
+
+
+____________________________________________________________________________________________________________________________________________________________________________
+4.How is a state encoded in your program;
+
+A state is represented as a 4x4 String matrix, which is stored in the class SlidingPuzzleNode.
+
+
+
+____________________________________________________________________________________________________________________________________________________________________________
+5.Where and how, in your program, is the successor function implemented?
+
+The class SlidingPuzzleProblem implements the getSuccessors() function, returning a list of successors.
+First of all the function searches for the empty element, if this is found the coordinates x and y (implemented as i and j) are set.
+Every state can have up to 4 possible successor, where the empty element can be sliced to:
+	>(x,y+1)
+	>(x,y-1)
+	>(x+1,y)
+	>(x-1,y)
+For each of this coordinates, it is checked whether this is still on the board using the IsInBorad() function. If that's the case, a successor node will be created using the createSuccessor() function 
+and adding its output (a SlidingPuzzleNode) to a list, which will be returned in the end.
+
+
+
+____________________________________________________________________________________________________________________________________________________________________________
+6.Where and how does your program test whether a state is the final state?
+
+In the class SearchAgent the function search() is implemented by a while-loop. The condition of the while loop is (!problem.isGoalState(currentNode)), which basically checks, whether the current node 
+is already the goal node, using the function isGoalState() from the SlidingPuzzleProblem class.
+
+In the isGoalState() function of the class SlidingPuzzleProblem, an node with the goal state (a perfectly ordered board) is created and compared by the compareStates() function of the class SlidingPuzzleNode
+
+The compareStates() function of the class SlidingPuzzleNode iterates trough every element of the first node and compares, if the second node has the same content in the corresponding element. If that's not the same in some point, false is returned, otherwise true. The compareStates() function is used in the isGoalState() function, because of the DRY (DONT REPEAT YOURSELF) method.
+
+
+
+____________________________________________________________________________________________________________________________________________________________________________
+7.What is the heuristics provided in your implementation of the Problem? 
+
+First of all the Hamming-distance was used (count of elements you need to take from the board and put it in the right place).
+As this turns out to be not as accurate as the Manhattan-distance, the heuristicsHamming() function is provided, but not used.
+
+The evaluationFunction() implements an A* algorithm by returning the sum of the pathCostSoFar of the node and the heuristicsManhattan() of the node.
+The heuristicsManhattan() function implements the Manhattan Distance: it accumulates for every element where the element should be and where it is and adds up the absolut value of the x delta and y delta.
+
+
+
+____________________________________________________________________________________________________________________________________________________________________________
+8.Why do you choose this heuristics? 
+
+The Hamming distance may returns a metric for how far the problem is solved, it does not differentiate between 2 states with the same amount of incorrect placed elements.
+This can cause problems, because a solution, where every number is pretty close to where it should be would be rated the same as one with completely random placed numbers (if the same amount of elements are not in place). This may work as a heuristic, but is not a good one, since it does not provide detailed feedback for prioritization of nodes.
+
+
+____________________________________________________________________________________________________________________________________________________________________________
+9.Where in your program is the heuristics calculated?
+
+The heuristics are implemented in the functions:
+Hamming distance: heuristicsHamming() function [SlidingPuzzleProblem]
+Manhattan distance: heuristicsManhattan() function [SlidingPuzzleProblem]
+
+
+____________________________________________________________________________________________________________________________________________________________________________
+10.Where and how, in your program, is it guaranteed that the most promising state is selected to expand?
+
+In the class SearchAgent the (waiting) queue is implemented as a priority queue (min queue). When a node is added, the java runtime environment will use the compare method of the NodeComporator class, 
+to insert the nodes based on their evaluation function (which is implemented in the SlidingPuzzleProblem class).
+
+It may be important to note that the visited queue was implemented as a Hash Set. For this the SlidingPuzzleNode class provides a toString() method to stringify a state, so it can be hashed and compared faster.
+Before this a linear search was implemented causing performance problems. 
+
+
+____________________________________________________________________________________________________________________________________________________________________________
+11.Any known bugs
+
+None
+
+
+____________________________________________________________________________________________________________________________________________________________________________
+12.Any comment you would like the marker to know.
+
+None
+
+
+
+
+
+
+
+
+
+
+
+
